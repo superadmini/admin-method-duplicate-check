@@ -20,8 +20,38 @@
     "Other",
     "Linters"
   ],
+  "keywords": [
+    "duplicate method",
+    "duplicate function", 
+    "code quality",
+    "lint",
+    "checker",
+    "wavy line",
+    "warning",
+    "scroll bar",
+    "multi language"
+  ],
   "activationEvents": [
-    "onLanguage:*"
+    "onLanguage:python",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:java",
+    "onLanguage:cpp",
+    "onLanguage:c",
+    "onLanguage:csharp",
+    "onLanguage:php",
+    "onLanguage:ruby",
+    "onLanguage:go",
+    "onLanguage:rust",
+    "onLanguage:swift",
+    "onLanguage:kotlin",
+    "onLanguage:scala",
+    "onLanguage:dart",
+    "onLanguage:vb",
+    "onLanguage:lua",
+    "onLanguage:perl",
+    "onLanguage:r",
+    "onLanguage:shellscript"
   ],
   "main": "./extension.js",
   "contributes": {
