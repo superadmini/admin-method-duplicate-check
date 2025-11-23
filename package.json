@@ -1,0 +1,91 @@
+{
+  "name": "admin-method-duplicate-check",
+  "displayName": "Admin Method Duplicate Check",
+  "description": "检测文件中的重复方法名并在重复方法名下显示波浪线和警告 | Detect duplicate method names in files and show wavy lines and warnings",
+  "version": "0.0.1",
+  "publisher": "superadmini",
+  "icon": "images/app_line.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/superadmini/admin-method-duplicate-check.git"
+  },
+  "homepage": "https://github.com/superadmini/admin-method-duplicate-check#readme",
+  "bugs": {
+    "url": "https://github.com/superadmini/admin-method-duplicate-check/issues"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:*"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Admin Method Duplicate Check",
+      "properties": {
+        "adminMethodDuplicateCheck.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用/禁用方法重复检测 | Enable/disable duplicate method detection"
+        },
+        "adminMethodDuplicateCheck.fileExtensions": {
+          "type": "array",
+          "default": [
+            ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".cpp", ".c", ".cs", ".php", 
+            ".rb", ".go", ".rs", ".swift", ".kt", ".scala", ".clj", ".hs", ".ml", ".fs",
+            ".dart", ".lua", ".pl", ".r", ".m", ".sh", ".bash", ".zsh", ".fish",
+            ".vb", ".pas", ".delphi", ".ada", ".fortran", ".f90", ".cob", ".asm",
+            ".s", ".nim", ".zig", ".v", ".crystal", ".elm", ".purescript", ".idris",
+            ".agda", ".coq", ".lean", ".f#", ".ocaml", ".reason", ".rescript"
+          ],
+          "description": "要检测的文件后缀名 | File extensions to check for duplicate methods",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adminMethodDuplicateCheck.enableWavyLine": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用波浪线提示 | Enable wavy line underline for duplicate methods"
+        },
+        "adminMethodDuplicateCheck.enablePopup": {
+          "type": "boolean",
+          "default": true,
+          "description": "启用右下角弹窗提示 | Enable popup notification in bottom right corner"
+        },
+        "adminMethodDuplicateCheck.wavyLineColor": {
+          "type": "string",
+          "default": "#ff0000",
+          "description": "波浪线颜色 | Wavy line color for duplicate methods"
+        },
+        "adminMethodDuplicateCheck.warningColor": {
+          "type": "string",
+          "default": "#ff8800",
+          "description": "右侧滚动条警告颜色 | Warning color in scroll bar"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.36.0",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.5",
+    "vsce": "^1.55.0"
+  }
+}
