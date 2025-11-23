@@ -173,6 +173,11 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.0.2 (2025-11-22)
+- 🐛 修复Python中f-string误识别问题 | Fix f-string false positive detection in Python
+- 🐛 修复波浪线位置计算错误 | Fix wavy line position calculation error
+- 🔧 改进正则表达式匹配精度 | Improve regex pattern matching accuracy
+
 ### v0.0.1 (2025-11-22)
 - ✨ 初始版本发布 | Initial release
 - ✨ 支持40+种编程语言 | Support 40+ programming languages

@@ -2,7 +2,7 @@
   "name": "admin-method-duplicate-check",
   "displayName": "Admin Method Duplicate Check",
   "description": "检测文件中的重复方法名并在重复方法名下显示波浪线和警告 | Detect duplicate method names in files and show wavy lines and warnings",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "superadmini",
   "icon": "images/app_line.png",
   "repository": {

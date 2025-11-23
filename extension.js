@@ -15,7 +15,7 @@ function activate(context) {
 
     // 方法名匹配模式 - 支持多种编程语言
     const methodPatterns = [
-        // Python: def method_name(
+        // Python: def method_name( - 更严格的匹配，避免误识别
         { pattern: /^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'python' },
         // JavaScript/TypeScript: function method_name(, method_name(, const method_name = (, async method_name(
         { pattern: /^\s*(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/, lang: 'javascript' },
@@ -24,7 +24,7 @@ function activate(context) {
         // Java: public/private/protected static final type method_name(
         { pattern: /^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?(?:\w+\s+)*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'java' },
         // C/C++: type method_name(
-        { pattern: /^\s*(?:\w+\s+)*([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*[{;]/, lang: 'cpp' },
+        { pattern: /^\s*(?:\w+\s+(?:\*+\s*)*)([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*[{;]/, lang: 'cpp' },
         // C#: public/private/protected static type method_name(
         { pattern: /^\s*(?:public|private|protected|internal)?\s*(?:static\s+)?(?:virtual\s+)?(?:override\s+)?(?:\w+\s+)*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'csharp' },
         // PHP: function method_name(
@@ -42,7 +42,7 @@ function activate(context) {
         // Scala: def method_name(
         { pattern: /^\s*(?:def\s+)([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'scala' },
         // Dart: type method_name(
-        { pattern: /^\s*(?:\w+\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*[{;]/, lang: 'dart' },
+        { pattern: /^\s*(?:\w+\s+(?:\*+\s*)*)([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*[{;]/, lang: 'dart' },
         // VB: Function/Sub method_name(
         { pattern: /^\s*(?:Public\s+|Private\s+|Protected\s+)?(Function|Sub)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'vb', groupIndex: 2 }
     ];
@@ -122,7 +122,23 @@ function activate(context) {
                 const match = line.match(patternInfo.pattern);
                 if (match) {
                     const methodName = match[patternInfo.groupIndex || 1];
-                    const methodStart = match.index + (patternInfo.groupIndex ? line.indexOf(match[patternInfo.groupIndex], match.index) : match.index);
+                    
+                    // 找到方法名在整行中的准确位置
+                    const fullMatch = match[0];
+                    const fullMatchStart = match.index;
+                    
+                    // 在完整匹配中找到方法名的位置
+                    let methodNameStartInMatch;
+                    if (patternInfo.groupIndex) {
+                        // 如果使用了捕获组
+                        const groupMatch = line.match(patternInfo.pattern);
+                        methodNameStartInMatch = line.indexOf(groupMatch[patternInfo.groupIndex], fullMatchStart) - fullMatchStart;
+                    } else {
+                        // 默认第一个捕获组
+                        methodNameStartInMatch = fullMatch.indexOf(methodName);
+                    }
+                    
+                    const methodStart = fullMatchStart + methodNameStartInMatch;
                     const methodEnd = methodStart + methodName.length;
                     
                     methods.push({
