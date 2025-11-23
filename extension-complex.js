@@ -212,6 +212,11 @@ function activate(context) {
                 if (match) {
                     const methodName = match[patternInfo.groupIndex || 1];
                     
+                    // 使用验证函数进行额外检查
+                    if (patternInfo.validate && !patternInfo.validate(line, match)) {
+                        continue;
+                    }
+                    
                     // 额外检查：确保不是f-string中的内容
                     if (line.includes('f"') || line.includes("f'")) {
                         // 如果是f-string行，跳过非def的匹配
@@ -330,9 +335,6 @@ function activate(context) {
                 }
             });
         }
-
-        console.log('重复范围数量:', duplicateRanges.length);
-        console.log('警告范围数量:', warningRanges.length);
 
         // 应用装饰器
         if (config.get('enableWavyLine', true)) {

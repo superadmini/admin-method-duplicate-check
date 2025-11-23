@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="admin-method-duplicate-check" Version="0.0.5" Publisher="superadmini" />
+    <DisplayName>Admin Method Duplicate Check</DisplayName>
+    <Description xml:space="preserve">Detect duplicate method names in files and show wavy lines and warnings</Description>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Code" />
+  </Installation>
+  <Dependencies>
+    <Extension Id="Microsoft.VisualStudio.Code" IdName="Microsoft.VisualStudio.Code" Version="1.74.0" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.Code.Extension" Path="extension.js" />
+    <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="package.json" />
+  </Assets>
+</PackageManifest>
