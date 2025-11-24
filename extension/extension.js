@@ -355,26 +355,269 @@ function activate(context) {
             });
             
             const duplicateCount = duplicateMethodNames.size;
+            console.log(`重复方法名数量: ${duplicateCount}`);
+            console.log(`弹窗启用状态: ${config.get('enablePopup', true)}`);
+            console.log(`重复范围长度: ${duplicateRanges.length}`);
+            
             if (duplicateCount > 0) {
-                console.log(`发现 ${duplicateCount} 个重复的方法名，准备显示弹窗`);
+                console.log(`准备显示弹窗: ${duplicateCount} 个重复方法`);
                 vscode.window.showWarningMessage(
                     `发现 ${duplicateCount} 个重复的方法名 | Found ${duplicateCount} duplicate method names`,
                     '查看详情 | View Details'
                 ).then(selection => {
+                    console.log('用户选择:', selection);
                     if (selection === '查看详情 | View Details') {
-                        // 跳转到第一个重复方法
-                        if (duplicateRanges.length > 0) {
-                            const firstDuplicate = duplicateRanges[0];
-                            editor.selection = new vscode.Selection(
-                                firstDuplicate.range.start,
-                                firstDuplicate.range.start
-                            );
-                            editor.revealRange(firstDuplicate.range);
-                        }
+                        showDuplicateDetails(editor, methods, methodCounts, duplicateRanges);
                     }
                 });
+            } else {
+                console.log('没有发现重复方法，不显示弹窗');
             }
+        } else {
+            console.log('弹窗功能已禁用');
         }
+    }
+
+    // 显示重复方法详情
+    function showDuplicateDetails(editor, methods, methodCounts, duplicateRanges) {
+        // 按方法名分组重复项
+        const duplicateGroups = new Map();
+        
+        methods.forEach(method => {
+            const fullName = method.fullName || method.name;
+            if (methodCounts.get(fullName) > 1) {
+                if (!duplicateGroups.has(fullName)) {
+                    duplicateGroups.set(fullName, []);
+                }
+                duplicateGroups.get(fullName).push(method);
+            }
+        });
+
+        // 创建详情面板内容
+        const panel = vscode.window.createWebviewPanel(
+            'duplicateMethodDetails',
+            '重复方法详情 | Duplicate Method Details',
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
+        );
+
+        // 生成 HTML 内容
+        let html = `
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>重复方法详情</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    padding: 20px;
+                    background-color: var(--vscode-editor-background);
+                    color: var(--vscode-editor-foreground);
+                }
+                .method-group {
+                    margin-bottom: 30px;
+                    border: 1px solid var(--vscode-panel-border);
+                    border-radius: 6px;
+                    padding: 15px;
+                    background-color: var(--vscode-editor-background);
+                }
+                .method-name {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: var(--vscode-errorForeground);
+                    margin-bottom: 15px;
+                    padding-bottom: 10px;
+                    border-bottom: 2px solid var(--vscode-panel-border);
+                }
+                .duplicate-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 8px 12px;
+                    margin: 5px 0;
+                    background-color: var(--vscode-list-inactiveSelectionBackground);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+                .duplicate-item:hover {
+                    background-color: var(--vscode-list-hoverBackground);
+                }
+                .duplicate-index {
+                    background-color: var(--vscode-badge-background);
+                    color: var(--vscode-badge-foreground);
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: bold;
+                    margin-right: 15px;
+                    min-width: 30px;
+                    text-align: center;
+                }
+                .duplicate-info {
+                    flex: 1;
+                    font-family: 'Consolas', 'Courier New', monospace;
+                    font-size: 14px;
+                }
+                .delete-btn {
+                    background-color: var(--vscode-errorForeground);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    margin-left: 10px;
+                    transition: background-color 0.2s;
+                }
+                .delete-btn:hover {
+                    background-color: var(--vscode-button-background);
+                }
+                .refresh-btn {
+                    background-color: var(--vscode-button-background);
+                    color: var(--vscode-button-foreground);
+                    border: 1px solid var(--vscode-button-border);
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin-top: 20px;
+                    font-size: 14px;
+                }
+                .refresh-btn:hover {
+                    background-color: var(--vscode-button-hoverBackground);
+                }
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+                .title {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: var(--vscode-foreground);
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="title">重复方法详情</div>
+                <button class="refresh-btn" onclick="refreshDetails()">刷新 Refresh</button>
+            </div>
+        `;
+
+        let duplicateIndex = 1;
+        
+        duplicateGroups.forEach((duplicateMethods, methodName) => {
+            html += `
+            <div class="method-group">
+                <div class="method-name">${methodName}</div>
+            `;
+            
+            duplicateMethods.forEach(method => {
+                const startLine = method.line + 1; // VSCode 行号从 0 开始，显示从 1 开始
+                const endLine = method.line + 1;
+                html += `
+                <div class="duplicate-item" onclick="jumpToLine(${method.line}, ${method.start}, ${method.end})">
+                    <div class="duplicate-index">${duplicateIndex}</div>
+                    <div class="duplicate-info">duplicate ${duplicateIndex} - line(${startLine}-${endLine})</div>
+                    <button class="delete-btn" onclick="deleteDuplicate(event, ${method.line}, ${method.start}, ${method.end})">×</button>
+                </div>
+                `;
+                duplicateIndex++;
+            });
+            
+            html += '</div>';
+        });
+
+        html += `
+            <script>
+                const vscode = acquireVsCodeApi();
+                
+                function jumpToLine(line, start, end) {
+                    vscode.postMessage({
+                        command: 'jumpToLine',
+                        line: line,
+                        start: start,
+                        end: end
+                    });
+                }
+                
+                function deleteDuplicate(event, line, start, end) {
+                    event.stopPropagation();
+                    vscode.postMessage({
+                        command: 'deleteDuplicate',
+                        line: line,
+                        start: start,
+                        end: end
+                    });
+                }
+                
+                function refreshDetails() {
+                    vscode.postMessage({
+                        command: 'refresh'
+                    });
+                }
+            </script>
+        </body>
+        </html>`;
+
+        panel.webview.html = html;
+
+        // 处理来自 webview 的消息
+        panel.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case 'jumpToLine':
+                        const jumpRange = new vscode.Range(
+                            new vscode.Position(message.line, message.start),
+                            new vscode.Position(message.line, message.end)
+                        );
+                        editor.selection = new vscode.Selection(
+                            jumpRange.start,
+                            jumpRange.start
+                        );
+                        editor.revealRange(jumpRange);
+                        break;
+                    
+                    case 'deleteDuplicate':
+                        const deleteRange = new vscode.Range(
+                            new vscode.Position(message.line, message.start),
+                            new vscode.Position(message.line, message.end)
+                        );
+                        
+                        // 删除重复的方法名
+                        editor.edit(editBuilder => {
+                            editBuilder.delete(deleteRange);
+                        }).then(success => {
+                            if (success) {
+                                vscode.window.showInformationMessage('已删除重复方法名 | Deleted duplicate method name');
+                                // 重新检查重复方法
+                                setTimeout(() => {
+                                    checkDuplicateMethods(editor);
+                                    // 刷新详情面板
+                                    panel.webview.postMessage({ command: 'refresh' });
+                                }, 100);
+                            }
+                        });
+                        break;
+                    
+                    case 'refresh':
+                        // 重新检查并刷新详情
+                        checkDuplicateMethods(editor);
+                        break;
+                }
+            },
+            undefined
+        );
     }
 
     // 清理装饰器
