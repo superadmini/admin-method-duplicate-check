@@ -187,6 +187,12 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.1.2 (2025-11-24)
+- 🐛 修复JavaScript方法检测误匹配问题 | Fix JavaScript method detection false positives
+- 🔧 改进JavaScript正则表达式模式 | Improve JavaScript regex patterns
+- ❌ 排除if/while/for等控制结构 | Exclude control structures like if/while/for
+- 🎯 提高JS方法识别精度 | Improve JS method identification accuracy
+
 ### v0.1.1 (2025-11-24)
 - 🐛 修复PHP方法检测误匹配问题 | Fix PHP method detection false positives
 - 🔧 添加语言特定过滤 | Add language-specific filtering
@@ -300,7 +306,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.1  
+🎯 **版本 | Version:** 0.1.2  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  

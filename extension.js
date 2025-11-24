@@ -87,10 +87,10 @@ function activate(context) {
     const methodPatterns = [
         // Python: def method_name( - 更严格的匹配，避免误识别
         { pattern: /^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'python' },
-        // JavaScript/TypeScript: function method_name(, method_name(, const method_name = (, async method_name(
+        // JavaScript/TypeScript: function method_name(, const method_name = (, async method_name(
         { pattern: /^\s*(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/, lang: 'javascript' },
-        { pattern: /^\s*(?:async\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s+)?\(/, lang: 'javascript' },
-        { pattern: /^\s*(?:async\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\([^)]*\)\s*[{=>]/, lang: 'javascript' },
+        { pattern: /^\s*(?:async\s+)?(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s+)?\(/, lang: 'javascript' },
+        { pattern: /^\s*(?:async\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*function\s*\(/, lang: 'javascript' },
         // Java: public/private/protected static final type method_name(
         { pattern: /^\s*(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?(?:\w+\s+)*([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'java' },
         // C/C++: type method_name(
@@ -268,6 +268,38 @@ function activate(context) {
                         // 排除变量赋值中的函数调用
                         if (line.includes('=') && !line.includes('function')) {
                             continue;
+                        }
+                    }
+                    
+                    // JavaScript特定检查：确保是方法定义而不是控制结构
+                    if (patternInfo.lang === 'javascript') {
+                        // 排除if语句
+                        if (line.includes('if ')) {
+                            continue;
+                        }
+                        // 排除while语句
+                        if (line.includes('while ')) {
+                            continue;
+                        }
+                        // 排除for语句
+                        if (line.includes('for ')) {
+                            continue;
+                        }
+                        // 排除switch语句
+                        if (line.includes('switch ')) {
+                            continue;
+                        }
+                        // 排除catch语句
+                        if (line.includes('catch ')) {
+                            continue;
+                        }
+                        // 排除函数调用（不是定义）
+                        if (line.includes('.') && !line.includes('function') && !line.includes('=') && !line.includes('async')) {
+                            // 如果包含点号且不包含function/=，可能是对象方法调用
+                            // 但要排除像 "const obj = { method() {} }" 这样的情况
+                            if (!line.includes('{') || (line.includes('{') && line.indexOf('.') < line.indexOf('{'))) {
+                                continue;
+                            }
                         }
                     }
                     
