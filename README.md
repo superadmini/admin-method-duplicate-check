@@ -187,6 +187,12 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.1.3 (2025-11-24)
+- 📊 修复详情窗口行范围显示 | Fix details window line range display
+- 🎯 显示完整方法范围（开始行-结束行）| Show complete method range (start line - end line)
+- 🔧 改进行范围计算逻辑 | Improve method range calculation logic
+- 📱 优化用户体验 | Optimize user experience
+
 ### v0.1.2 (2025-11-24)
 - 🐛 修复JavaScript方法检测误匹配问题 | Fix JavaScript method detection false positives
 - 🔧 改进JavaScript正则表达式模式 | Improve JavaScript regex patterns
@@ -306,7 +312,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.2  
+🎯 **版本 | Version:** 0.1.3  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  

@@ -605,7 +605,54 @@ function activate(context) {
             
             duplicateMethods.forEach(method => {
                 const startLine = method.line + 1; // VSCode 行号从 0 开始，显示从 1 开始
-                const endLine = method.line + 1;
+                
+                // 计算方法的结束行
+                let endLine = startLine;
+                const document = editor.document;
+                const totalLines = document.lineCount;
+                
+                // 从方法定义行开始，查找方法的结束位置
+                for (let i = method.line; i < totalLines; i++) {
+                    const line = document.lineAt(i).text;
+                    
+                    // 如果遇到空行或注释，继续查找
+                    if (line.trim() === '' || line.trim().startsWith('#') || line.trim().startsWith('//')) {
+                        continue;
+                    }
+                    
+                    // 检查是否遇到下一个方法定义或类定义（缩进级别相同或更小）
+                    const currentIndent = line.match(/^(\s*)/);
+                    const currentIndentLevel = currentIndent ? currentIndent[1].length : 0;
+                    const methodIndent = document.lineAt(method.line).text.match(/^(\s*)/);
+                    const methodIndentLevel = methodIndent ? methodIndent[1].length : 0;
+                    
+                    // 如果遇到同级别或更高级别的定义（且不是当前方法的继续），则当前方法结束
+                    if (i > method.line && currentIndentLevel <= methodIndentLevel) {
+                        // 检查是否是新的方法、类、函数等定义
+                        const isNextDefinition = methodPatterns.some(pattern => {
+                            if (document.fileName.endsWith('.py') && pattern.lang !== 'python') return false;
+                            if (document.fileName.endsWith('.php') && pattern.lang !== 'php') return false;
+                            if (document.fileName.endsWith('.js') && pattern.lang !== 'javascript') return false;
+                            if (document.fileName.endsWith('.ts') && pattern.lang !== 'javascript') return false;
+                            if (document.fileName.endsWith('.java') && pattern.lang !== 'java') return false;
+                            if (document.fileName.endsWith('.cpp') && pattern.lang !== 'cpp') return false;
+                            if (document.fileName.endsWith('.c') && pattern.lang !== 'cpp') return false;
+                            if (document.fileName.endsWith('.cs') && pattern.lang !== 'csharp') return false;
+                            if (document.fileName.endsWith('.rb') && pattern.lang !== 'ruby') return false;
+                            if (document.fileName.endsWith('.go') && pattern.lang !== 'go') return false;
+                            if (document.fileName.endsWith('.rs') && pattern.lang !== 'rust') return false;
+                            
+                            return line.match(pattern.pattern);
+                        });
+                        
+                        if (isNextDefinition) {
+                            break; // 找到下一个定义，当前方法结束
+                        }
+                    }
+                    
+                    endLine = i + 1; // 更新结束行（+1因为显示行号从1开始）
+                }
+                
                 html += `
                 <div class="duplicate-item" onclick="jumpToLine(${method.line}, ${method.start}, ${method.end}, '${currentFilePath}')">
                     <div class="duplicate-index">${duplicateIndex}</div>
