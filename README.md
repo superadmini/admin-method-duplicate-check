@@ -187,6 +187,12 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.1.4 (2025-11-24)
+- 🔗 修复GitHub仓库链接问题 | Fix GitHub repository links issue
+- 📦 成功推送代码到GitHub仓库 | Successfully push code to GitHub repository
+- 📝 更新README.md项目状态信息 | Update README.md project status information
+- 🚀 发布到VSCode市场v0.1.4 | Publish to VSCode Marketplace v0.1.4
+
 ### v0.1.3 (2025-11-24)
 - 📊 修复详情窗口行范围显示 | Fix details window line range display
 - 🎯 显示完整方法范围（开始行-结束行）| Show complete method range (start line - end line)
@@ -312,7 +318,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.3  
+🎯 **版本 | Version:** 0.1.4  
 📦 **GitHub仓库 | GitHub Repository:** https://github.com/superadmini/admin-method-duplicate-check  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
@@ -323,7 +329,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.3  
+🎯 **版本 | Version:** 0.1.4  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
