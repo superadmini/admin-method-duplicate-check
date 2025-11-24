@@ -383,6 +383,9 @@ function activate(context) {
         // 按方法名分组重复项
         const duplicateGroups = new Map();
         
+        // 获取当前文件路径
+        const currentFilePath = editor.document.uri.fsPath;
+        
         methods.forEach(method => {
             const fullName = method.fullName || method.name;
             if (methodCounts.get(fullName) > 1) {
@@ -526,7 +529,7 @@ function activate(context) {
                 const startLine = method.line + 1; // VSCode 行号从 0 开始，显示从 1 开始
                 const endLine = method.line + 1;
                 html += `
-                <div class="duplicate-item" onclick="jumpToLine(${method.line}, ${method.start}, ${method.end})">
+                <div class="duplicate-item" onclick="jumpToLine(${method.line}, ${method.start}, ${method.end}, '${currentFilePath}')">
                     <div class="duplicate-index">${duplicateIndex}</div>
                     <div class="duplicate-info">duplicate ${duplicateIndex} - line(${startLine}-${endLine})</div>
                     <button class="delete-btn" onclick="deleteDuplicate(event, ${method.line}, ${method.start}, ${method.end})">×</button>
@@ -542,12 +545,13 @@ function activate(context) {
             <script>
                 const vscode = acquireVsCodeApi();
                 
-                function jumpToLine(line, start, end) {
+                function jumpToLine(line, start, end, filePath) {
                     vscode.postMessage({
                         command: 'jumpToLine',
                         line: line,
                         start: start,
-                        end: end
+                        end: end,
+                        filePath: filePath
                     });
                 }
                 
@@ -577,15 +581,25 @@ function activate(context) {
             message => {
                 switch (message.command) {
                     case 'jumpToLine':
-                        const jumpRange = new vscode.Range(
-                            new vscode.Position(message.line, message.start),
-                            new vscode.Position(message.line, message.end)
-                        );
-                        editor.selection = new vscode.Selection(
-                            jumpRange.start,
-                            jumpRange.start
-                        );
-                        editor.revealRange(jumpRange);
+                        // 打开并聚焦到目标文件
+                        vscode.workspace.openTextDocument(message.filePath)
+                            .then(doc => {
+                                return vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+                            })
+                            .then(targetEditor => {
+                                const jumpRange = new vscode.Range(
+                                    new vscode.Position(message.line, message.start),
+                                    new vscode.Position(message.line, message.end)
+                                );
+                                targetEditor.selection = new vscode.Selection(
+                                    jumpRange.start,
+                                    jumpRange.start
+                                );
+                                targetEditor.revealRange(jumpRange, vscode.TextEditorRevealType.InCenter);
+                            })
+                            .catch(err => {
+                                vscode.window.showErrorMessage(`无法打开文件: ${message.filePath}\nCannot open file: ${message.filePath}`);
+                            });
                         break;
                     
                     case 'deleteDuplicate':

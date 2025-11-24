@@ -187,6 +187,12 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.1.0 (2025-11-24)
+- 🔧 修复点击跳转功能 | Fix click-to-jump functionality
+- 📂 支持文件自动打开和聚焦 | Support automatic file opening and focusing
+- 🎯 改进行号定位精度 | Improve line positioning accuracy
+- 📱 优化用户体验 | Optimize user experience
+
 ### v0.0.9 (2025-11-24)
 - 🎨 修复扩展图标显示问题 | Fix extension icon display issue
 - 📦 添加扩展图标配置 | Add extension icon configuration
@@ -288,7 +294,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.0.9  
+🎯 **版本 | Version:** 0.1.0  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
