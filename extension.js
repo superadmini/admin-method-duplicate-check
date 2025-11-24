@@ -589,23 +589,37 @@ function activate(context) {
                         break;
                     
                     case 'deleteDuplicate':
-                        const deleteRange = new vscode.Range(
-                            new vscode.Position(message.line, message.start),
-                            new vscode.Position(message.line, message.end)
-                        );
+                        // 查找方法的完整范围
+                        const methodBounds = findMethodBounds(editor, message.line);
+                        const document = editor.document;
+                        const endLineLength = document.lineAt(methodBounds.end).text.length;
                         
-                        // 删除重复的方法名
-                        editor.edit(editBuilder => {
-                            editBuilder.delete(deleteRange);
-                        }).then(success => {
-                            if (success) {
-                                vscode.window.showInformationMessage('已删除重复方法名 | Deleted duplicate method name');
-                                // 重新检查重复方法
-                                setTimeout(() => {
-                                    checkDuplicateMethods(editor);
-                                    // 刷新详情面板
-                                    panel.webview.postMessage({ command: 'refresh' });
-                                }, 100);
+                        // 显示确认对话框
+                        vscode.window.showWarningMessage(
+                            `确定要删除整个方法吗？这将删除从第 ${methodBounds.start + 1} 行到第 ${methodBounds.end + 1} 行的内容。\n\nAre you sure you want to delete the entire method? This will delete content from line ${methodBounds.start + 1} to line ${methodBounds.end + 1}.`,
+                            '确定删除 | Delete',
+                            '取消 | Cancel'
+                        ).then(selection => {
+                            if (selection === '确定删除 | Delete') {
+                                const deleteRange = new vscode.Range(
+                                    new vscode.Position(methodBounds.start, 0),
+                                    new vscode.Position(methodBounds.end, endLineLength)
+                                );
+                                
+                                // 删除整个方法
+                                editor.edit(editBuilder => {
+                                    editBuilder.delete(deleteRange);
+                                }).then(success => {
+                                    if (success) {
+                                        vscode.window.showInformationMessage(`已删除整个方法 (第 ${methodBounds.start + 1}-${methodBounds.end + 1} 行) | Deleted entire method (lines ${methodBounds.start + 1}-${methodBounds.end + 1})`);
+                                        // 重新检查重复方法
+                                        setTimeout(() => {
+                                            checkDuplicateMethods(editor);
+                                            // 刷新详情面板
+                                            panel.webview.postMessage({ command: 'refresh' });
+                                        }, 100);
+                                    }
+                                });
                             }
                         });
                         break;
@@ -618,6 +632,41 @@ function activate(context) {
             },
             undefined
         );
+    }
+
+    // 查找方法的完整范围
+    function findMethodBounds(editor, methodLine) {
+        const document = editor.document;
+        const lines = document.getText().split('\n');
+        
+        // startLine 应该就是方法名所在行，不需要向上查找
+        let startLine = methodLine;
+        let endLine = methodLine;
+        
+        // 向下查找方法结束（找到下一个方法定义或空行）
+        while (endLine < lines.length - 1) {
+            endLine++;
+            const line = lines[endLine].trim();
+            
+            // 检查是否遇到下一个方法定义
+            const isNextMethod = methodPatterns.some(pattern => {
+                if (document.fileName.endsWith('.py') && pattern.lang !== 'python') {
+                    return false;
+                }
+                return line.match(pattern.pattern);
+            });
+            
+            // 如果遇到空行、注释或下一个方法定义，结束查找
+            if (line === '' || line.startsWith('#') || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*') || isNextMethod) {
+                endLine--;
+                break;
+            }
+        }
+        
+        return {
+            start: startLine,
+            end: endLine
+        };
     }
 
     // 清理装饰器

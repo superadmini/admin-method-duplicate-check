@@ -60,6 +60,20 @@ A powerful VSCode extension that detects duplicate method names in files, suppor
 ### 从市场安装 | Install from Marketplace
 🔗 [VSCode Marketplace](https://marketplace.visualstudio.com/items?itemName=superadmini.admin-method-duplicate-check)
 
+## 📸 截图展示 | Screenshots
+
+### 重复方法检测 | Duplicate Method Detection
+<img src="images/app_line.png" alt="Duplicate Method Detection" width="256" height="256">
+
+### 弹窗通知 | Popup Notification
+![Popup Notification](images/popup_dialog.jpg)
+
+### 详情窗口 | Details Window
+![Details Window](images/dupliate_detail_window.jpg)
+
+### 删除确认 | Delete Confirmation
+![Delete Confirmation](images/confirm_delete_method.jpg)
+
 ## 使用方法 | Usage
 
 安装扩展后，打开支持的编程语言文件：
@@ -173,6 +187,42 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.0.8 (2025-11-24)
+- ✨ 新增增强详情窗口 | Enhanced details window with interactive features
+- ✨ 点击跳转功能 | Click-to-jump functionality for duplicate methods
+- ✨ 删除按钮和确认对话框 | Delete buttons with confirmation dialog
+- ✨ 整个方法删除 | Delete entire method (including method definition line)
+- 🐛 修复方法边界检测问题 | Fix method boundary detection to include method name line
+- 📸 添加截图展示 | Add screenshots to README
+
+### v0.0.7 (2025-11-24)
+- ✨ 增强删除功能 | Enhanced delete functionality with confirmation dialog
+- ✨ 完整方法删除 | Delete entire method from start to end
+- 🔧 方法边界检测 | Method boundary detection for accurate deletion
+
+### v0.0.6 (2025-11-24)
+- ✨ 详情窗口增强 | Enhanced details window with interactive UI
+- ✨ 重复项索引显示 | Show duplicate items with index numbers
+- ✨ 行范围显示 | Display line ranges for each duplicate
+- ✨ 刷新功能 | Real-time refresh capability
+- 🔧 Webview技术 | Webview-based detail panel implementation
+
+### v0.0.5 (2025-11-23)
+- 🔧 修复VSIX打包结构问题 | Fix VSIX package structure issues
+- 🐛 解决扩展加载失败 | Resolve extension loading failures
+- 📦 改进打包流程 | Improve packaging process
+
+### v0.0.4 (2025-11-23)
+- 🐛 修复弹窗通知不显示问题 | Fix popup notification not appearing
+- 🔧 修复滚动条颜色块不显示 | Fix scroll bar color blocks not displaying
+- 🎨 增强装饰器类型 | Enhanced decoration types with gutter and overview ruler
+- 📝 添加调试日志 | Add debug logging for troubleshooting
+
+### v0.0.3 (2025-11-23)
+- 🐛 修复跨语言误匹配问题 | Fix cross-language false positive detection
+- 🔧 改进语言特定检测 | Improve language-specific detection
+- 📊 优化性能 | Performance optimization
+
 ### v0.0.2 (2025-11-22)
 - 🐛 修复Python中f-string误识别问题 | Fix f-string false positive detection in Python
 - 🐛 修复波浪线位置计算错误 | Fix wavy line position calculation error
@@ -233,7 +283,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.0.1  
+🎯 **版本 | Version:** 0.0.8  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
