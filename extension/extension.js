@@ -153,7 +153,11 @@ function activate(context) {
             },
             dark: {
                 backgroundColor: warningColor
-            }
+            },
+            gutter: true,
+            gutterSize: '8px',
+            overviewRulerLane: vscode.OverviewRulerLane.Right,
+            overviewRulerColor: warningColor
         });
     }
 
@@ -165,6 +169,11 @@ function activate(context) {
 
         const document = editor.document;
         const config = vscode.workspace.getConfiguration('adminMethodDuplicateCheck');
+        
+        console.log('检查重复方法，文件:', document.fileName);
+        console.log('插件启用状态:', config.get('enabled', true));
+        console.log('弹窗启用状态:', config.get('enablePopup', true));
+        console.log('波浪线启用状态:', config.get('enableWavyLine', true));
         
         if (!config.get('enabled', true)) {
             clearDecorations(editor);
@@ -202,11 +211,6 @@ function activate(context) {
                 const match = line.match(patternInfo.pattern);
                 if (match) {
                     const methodName = match[patternInfo.groupIndex || 1];
-                    
-                    // 使用验证函数进行额外检查
-                    if (patternInfo.validate && !patternInfo.validate(line, match)) {
-                        continue;
-                    }
                     
                     // 额外检查：确保不是f-string中的内容
                     if (line.includes('f"') || line.includes("f'")) {
@@ -266,6 +270,9 @@ function activate(context) {
             const count = methodCounts.get(fullName) || 0;
             methodCounts.set(fullName, count + 1);
         });
+        
+        console.log('检测到的方法:', methods.map(m => ({name: m.name, fullName: m.fullName, line: m.line})));
+        console.log('方法计数:', Array.from(methodCounts.entries()));
 
         // 标记重复方法 - 使用完整限定名
         const duplicateRanges = [];
@@ -324,6 +331,9 @@ function activate(context) {
             });
         }
 
+        console.log('重复范围数量:', duplicateRanges.length);
+        console.log('警告范围数量:', warningRanges.length);
+
         // 应用装饰器
         if (config.get('enableWavyLine', true)) {
             editor.setDecorations(decorationTypes.wavyLine, duplicateRanges);
@@ -334,7 +344,7 @@ function activate(context) {
         }
 
         // 显示弹窗提示
-        if (config.get('enablePopup', true) && duplicateRanges.length > 0) {
+        if (config.get('enablePopup', true)) {
             // 计算重复的方法名数量（使用完整限定名）
             const duplicateMethodNames = new Set();
             methods.forEach(method => {
@@ -345,14 +355,25 @@ function activate(context) {
             });
             
             const duplicateCount = duplicateMethodNames.size;
-            vscode.window.showWarningMessage(
-                `发现 ${duplicateCount} 个重复的方法名 | Found ${duplicateCount} duplicate method names`,
-                '查看详情 | View Details'
-            ).then(selection => {
-                if (selection === '查看详情 | View Details') {
-                    // 可以添加跳转到第一个重复方法的逻辑
-                }
-            });
+            if (duplicateCount > 0) {
+                console.log(`发现 ${duplicateCount} 个重复的方法名，准备显示弹窗`);
+                vscode.window.showWarningMessage(
+                    `发现 ${duplicateCount} 个重复的方法名 | Found ${duplicateCount} duplicate method names`,
+                    '查看详情 | View Details'
+                ).then(selection => {
+                    if (selection === '查看详情 | View Details') {
+                        // 跳转到第一个重复方法
+                        if (duplicateRanges.length > 0) {
+                            const firstDuplicate = duplicateRanges[0];
+                            editor.selection = new vscode.Selection(
+                                firstDuplicate.range.start,
+                                firstDuplicate.range.start
+                            );
+                            editor.revealRange(firstDuplicate.range);
+                        }
+                    }
+                });
+            }
         }
     }
 

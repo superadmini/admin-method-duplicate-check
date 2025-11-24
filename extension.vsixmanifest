@@ -4,6 +4,9 @@
     <Identity Id="admin-method-duplicate-check" Version="0.0.5" Publisher="superadmini" />
     <DisplayName>Admin Method Duplicate Check</DisplayName>
     <Description xml:space="preserve">Detect duplicate method names in files and show wavy lines and warnings</Description>
+    <Tags>duplicate method,duplicate function,code quality,lint,checker,wavy line,warning,scroll bar,multi language</Tags>
+    <Categories>Other,Linters</Categories>
+    <GalleryFlags>Public</GalleryFlags>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Code" />
@@ -12,7 +15,7 @@
     <Extension Id="Microsoft.VisualStudio.Code" IdName="Microsoft.VisualStudio.Code" Version="1.74.0" />
   </Dependencies>
   <Assets>
-    <Asset Type="Microsoft.VisualStudio.Code.Extension" Path="extension.js" />
-    <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="package.json" />
+    <Asset Type="Microsoft.VisualStudio.Code.Extension" Path="extension" />
+    <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
   </Assets>
 </PackageManifest>
