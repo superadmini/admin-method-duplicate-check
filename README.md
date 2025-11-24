@@ -187,6 +187,12 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.1.1 (2025-11-24)
+- 🐛 修复PHP方法检测误匹配问题 | Fix PHP method detection false positives
+- 🔧 添加语言特定过滤 | Add language-specific filtering
+- 🎯 提高PHP方法识别精度 | Improve PHP method identification accuracy
+- ❌ 排除return语句中的函数调用 | Exclude function calls in return statements
+
 ### v0.1.0 (2025-11-24)
 - 🔧 修复点击跳转功能 | Fix click-to-jump functionality
 - 📂 支持文件自动打开和聚焦 | Support automatic file opening and focusing
@@ -294,7 +300,7 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.0  
+🎯 **版本 | Version:** 0.1.1  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  

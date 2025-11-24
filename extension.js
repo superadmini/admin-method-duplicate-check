@@ -203,8 +203,38 @@ function activate(context) {
             }
             
             for (const patternInfo of methodPatterns) {
-                // 只对Python文件使用Python模式，避免跨语言误匹配
+                // 语言特定过滤：只匹配对应语言的文件
                 if (document.fileName.endsWith('.py') && patternInfo.lang !== 'python') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.php') && patternInfo.lang !== 'php') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.js') && patternInfo.lang !== 'javascript') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.ts') && patternInfo.lang !== 'javascript') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.java') && patternInfo.lang !== 'java') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.cpp') && patternInfo.lang !== 'cpp') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.c') && patternInfo.lang !== 'cpp') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.cs') && patternInfo.lang !== 'csharp') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.rb') && patternInfo.lang !== 'ruby') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.go') && patternInfo.lang !== 'go') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.rs') && patternInfo.lang !== 'rust') {
                     continue;
                 }
                 
@@ -223,6 +253,22 @@ function activate(context) {
                     // 额外检查：确保不是print语句或其他函数调用
                     if (line.includes('print(') || line.includes('console.log(') || line.includes('alert(')) {
                         continue;
+                    }
+                    
+                    // PHP特定检查：确保是方法定义而不是函数调用
+                    if (patternInfo.lang === 'php') {
+                        // 必须包含function关键字
+                        if (!line.includes('function')) {
+                            continue;
+                        }
+                        // 排除return语句中的函数调用
+                        if (line.trim().startsWith('return ')) {
+                            continue;
+                        }
+                        // 排除变量赋值中的函数调用
+                        if (line.includes('=') && !line.includes('function')) {
+                            continue;
+                        }
                     }
                     
                     // 找到方法名在整行中的准确位置
