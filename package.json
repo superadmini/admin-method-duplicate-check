@@ -2,8 +2,18 @@
   "name": "admin-method-duplicate-check",
   "displayName": "Admin Method Duplicate Check",
   "description": "Detect duplicate method names in files and show wavy lines and warnings",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "publisher": "superadmini",
+  "icon": "images/app_line.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/superadmini/admin-method-duplicate-check.git"
+  },
+  "bugs": {
+    "url": "https://github.com/superadmini/admin-method-duplicate-check/issues"
+  },
+  "homepage": "https://github.com/superadmini/admin-method-duplicate-check#readme",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.74.0"
   },
