@@ -313,6 +313,17 @@ Your support motivates us to keep improving!
 
 ✅ **已发布 | Published**  
 🎯 **版本 | Version:** 0.1.3  
+📦 **GitHub仓库 | GitHub Repository:** https://github.com/superadmini/admin-method-duplicate-check  
+⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
+🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
+📈 **最后更新 | Last Updated:** 2025-11-24
+
+---
+
+## 📊 项目状态 | Project Status
+
+✅ **已发布 | Published**  
+🎯 **版本 | Version:** 0.1.3  
 📦 **下载 | Downloads:** 正在统计中... | Counting...  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
