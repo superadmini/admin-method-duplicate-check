@@ -12,7 +12,7 @@ nvm use 23.6.1
 
 echo ""
 echo "✅ publisher: superadmini"
-echo "✅ 准备发布 Admin Method Duplicate Check v0.1.4"
+echo "✅ 准备发布 Admin Method Duplicate Check v0.1.5"
 echo ""
 echo "🚀 现在开始发布..."
 echo ""

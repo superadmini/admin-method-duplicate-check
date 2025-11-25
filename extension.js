@@ -8,9 +8,11 @@ function activate(context) {
 
     // 存储当前文件的重复方法信息
     let duplicateMethods = new Map();
+    let duplicateClasses = new Map();
     let decorationTypes = {
         wavyLine: null,
-        warning: null
+        warning: null,
+        classWarning: null
     };
 
     // 检测方法的作用域和上下文
@@ -117,6 +119,36 @@ function activate(context) {
         { pattern: /^\s*(?:Public\s+|Private\s+|Protected\s+)?(Function|Sub)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, lang: 'vb', groupIndex: 2 }
     ];
 
+    // 类名匹配模式 - 支持多种编程语言
+    const classPatterns = [
+        // Python: class ClassName:
+        { pattern: /^\s*class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*:/, lang: 'python' },
+        // JavaScript/TypeScript: class ClassName, class ClassName extends
+        { pattern: /^\s*class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?:extends\s+[a-zA-Z_$][a-zA-Z0-9_$]*)?\s*{/, lang: 'javascript' },
+        // Java: public class ClassName
+        { pattern: /^\s*(?:public\s+|private\s+|protected\s+)?(?:static\s+)?(?:final\s+)?(?:abstract\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:extends\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*(?:implements\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'java' },
+        // C++: class ClassName
+        { pattern: /^\s*(?:class\s+)([a-zA-Z_][a-zA-Z0-9_]*)\s*(?::\s*(?:public\s+|private\s+|protected\s+)?[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'cpp' },
+        // C#: public class ClassName
+        { pattern: /^\s*(?:public\s+|private\s+|protected\s+|internal\s+)?(?:static\s+)?(?:abstract\s+)?(?:sealed\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?::\s*[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'csharp' },
+        // PHP: class ClassName
+        { pattern: /^\s*(?:abstract\s+)?(?:final\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:extends\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*(?:implements\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'php' },
+        // Ruby: class ClassName
+        { pattern: /^\s*class\s+([a-zA-Z_][a-zA-Z0-9_?]*)\s*(?:\s*<\s*[a-zA-Z_][a-zA-Z0-9_?]*)?\s*/, lang: 'ruby' },
+        // Go: type ClassName struct
+        { pattern: /^\s*type\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+struct\s*{/, lang: 'go' },
+        // Rust: struct ClassName
+        { pattern: /^\s*(?:pub\s+)?struct\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<[^>]*>)?\s*{/, lang: 'rust' },
+        // Swift: class ClassName
+        { pattern: /^\s*(?:public\s+|private\s+|internal\s+)?(?:final\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?::\s*[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'swift' },
+        // Kotlin: class ClassName
+        { pattern: /^\s*(?:public\s+|private\s+|protected\s+|internal\s+)?(?:abstract\s+|final\s+|sealed\s+|data\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<[^>]*>)?\s*(?::\s*[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'kotlin' },
+        // Scala: class ClassName
+        { pattern: /^\s*(?:abstract\s+|final\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:extends\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*(?:with\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*(?:\{|\s*:)/, lang: 'scala' },
+        // Dart: class ClassName
+        { pattern: /^\s*(?:abstract\s+)?class\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:extends\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*(?:with\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*(?:mixin\s+[a-zA-Z_][a-zA-Z0-9_]*)?\s*{/, lang: 'dart' }
+    ];
+
     // 更新装饰器类型
     function updateDecorationTypes() {
         const config = vscode.workspace.getConfiguration('adminMethodDuplicateCheck');
@@ -129,6 +161,9 @@ function activate(context) {
         }
         if (decorationTypes.warning) {
             decorationTypes.warning.dispose();
+        }
+        if (decorationTypes.classWarning) {
+            decorationTypes.classWarning.dispose();
         }
 
         // 创建新的装饰器类型
@@ -159,6 +194,123 @@ function activate(context) {
             overviewRulerLane: vscode.OverviewRulerLane.Right,
             overviewRulerColor: warningColor
         });
+
+        // 创建类重复警告装饰器（使用不同颜色）
+        decorationTypes.classWarning = vscode.window.createTextEditorDecorationType({
+            backgroundColor: '#ff6600',
+            light: {
+                backgroundColor: '#ff6600'
+            },
+            dark: {
+                backgroundColor: '#ff6600'
+            },
+            gutter: true,
+            gutterSize: '8px',
+            overviewRulerLane: vscode.OverviewRulerLane.Left,
+            overviewRulerColor: '#ff6600'
+        });
+    }
+
+    // 检测重复类
+    function checkDuplicateClasses(editor) {
+        const document = editor.document;
+        const text = document.getText();
+        const lines = text.split('\n');
+        const classes = [];
+        duplicateClasses.clear();
+
+        // 查找所有类定义
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            
+            // 跳过注释行和空行
+            if (line.trim().startsWith('#') || line.trim().startsWith('//') || line.trim() === '') {
+                continue;
+            }
+            
+            for (const patternInfo of classPatterns) {
+                // 语言特定过滤
+                if (document.fileName.endsWith('.py') && patternInfo.lang !== 'python') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.js') && patternInfo.lang !== 'javascript') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.ts') && patternInfo.lang !== 'javascript') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.java') && patternInfo.lang !== 'java') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.cpp') && patternInfo.lang !== 'cpp') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.cs') && patternInfo.lang !== 'csharp') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.php') && patternInfo.lang !== 'php') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.rb') && patternInfo.lang !== 'ruby') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.go') && patternInfo.lang !== 'go') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.rs') && patternInfo.lang !== 'rust') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.swift') && patternInfo.lang !== 'swift') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.kt') && patternInfo.lang !== 'kotlin') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.scala') && patternInfo.lang !== 'scala') {
+                    continue;
+                }
+                if (document.fileName.endsWith('.dart') && patternInfo.lang !== 'dart') {
+                    continue;
+                }
+                
+                const match = line.match(patternInfo.pattern);
+                if (match) {
+                    const className = match[1];
+                    
+                    // 找到类名在整行中的准确位置
+                    const fullMatch = match[0];
+                    const fullMatchStart = match.index;
+                    const classNameStartInMatch = fullMatch.indexOf(className);
+                    const classStart = fullMatchStart + classNameStartInMatch;
+                    const classEnd = classStart + className.length;
+                    
+                    classes.push({
+                        name: className,
+                        line: i,
+                        start: classStart,
+                        end: classEnd,
+                        range: new vscode.Range(
+                            new vscode.Position(i, classStart),
+                            new vscode.Position(i, classEnd)
+                        )
+                    });
+                    break;
+                }
+            }
+        }
+
+        // 查找重复类
+        const classCounts = new Map();
+        classes.forEach(cls => {
+            const count = classCounts.get(cls.name) || 0;
+            classCounts.set(cls.name, count + 1);
+        });
+
+        return {
+            classes: classes,
+            classCounts: classCounts,
+            duplicateClasses: classes.filter(cls => classCounts.get(cls.name) > 1)
+        };
     }
 
     // 检测重复方法
@@ -192,6 +344,9 @@ function activate(context) {
         const lines = text.split('\n');
         const methods = [];
         duplicateMethods.clear();
+        
+        // 检测重复类
+        const classCheckResult = checkDuplicateClasses(editor);
 
         // 查找所有方法
         for (let i = 0; i < lines.length; i++) {
@@ -411,6 +566,7 @@ function activate(context) {
 
         console.log('重复范围数量:', duplicateRanges.length);
         console.log('警告范围数量:', warningRanges.length);
+        console.log('重复类数量:', classCheckResult.duplicateClasses.length);
 
         // 应用装饰器
         if (config.get('enableWavyLine', true)) {
@@ -419,6 +575,17 @@ function activate(context) {
         
         if (warningRanges.length > 0) {
             editor.setDecorations(decorationTypes.warning, warningRanges);
+        }
+        
+        // 应用类重复警告装饰器
+        if (classCheckResult.duplicateClasses.length > 0) {
+            const classWarningRanges = classCheckResult.duplicateClasses.map(cls => ({
+                range: new vscode.Range(
+                    new vscode.Position(cls.line, 0),
+                    new vscode.Position(cls.line, 0)
+                )
+            }));
+            editor.setDecorations(decorationTypes.classWarning, classWarningRanges);
         }
 
         // 显示弹窗提示
@@ -432,24 +599,46 @@ function activate(context) {
                 }
             });
             
-            const duplicateCount = duplicateMethodNames.size;
-            console.log(`重复方法名数量: ${duplicateCount}`);
+            // 计算重复的类名数量
+            const duplicateClassNames = new Set();
+            classCheckResult.duplicateClasses.forEach(cls => {
+                if (classCheckResult.classCounts.get(cls.name) > 1) {
+                    duplicateClassNames.add(cls.name);
+                }
+            });
+            
+            const duplicateMethodCount = duplicateMethodNames.size;
+            const duplicateClassCount = duplicateClassNames.size;
+            const totalDuplicates = duplicateMethodCount + duplicateClassCount;
+            
+            console.log(`重复方法名数量: ${duplicateMethodCount}`);
+            console.log(`重复类名数量: ${duplicateClassCount}`);
+            console.log(`总重复数量: ${totalDuplicates}`);
             console.log(`弹窗启用状态: ${config.get('enablePopup', true)}`);
             console.log(`重复范围长度: ${duplicateRanges.length}`);
             
-            if (duplicateCount > 0) {
-                console.log(`准备显示弹窗: ${duplicateCount} 个重复方法`);
+            if (totalDuplicates > 0) {
+                let message = '';
+                if (duplicateMethodCount > 0 && duplicateClassCount > 0) {
+                    message = `发现 ${duplicateMethodCount} 个重复方法名和 ${duplicateClassCount} 个重复类名 | Found ${duplicateMethodCount} duplicate method names and ${duplicateClassCount} duplicate class names`;
+                } else if (duplicateMethodCount > 0) {
+                    message = `发现 ${duplicateMethodCount} 个重复的方法名 | Found ${duplicateMethodCount} duplicate method names`;
+                } else if (duplicateClassCount > 0) {
+                    message = `发现 ${duplicateClassCount} 个重复的类名 | Found ${duplicateClassCount} duplicate class names`;
+                }
+                
+                console.log(`准备显示弹窗: ${message}`);
                 vscode.window.showWarningMessage(
-                    `发现 ${duplicateCount} 个重复的方法名 | Found ${duplicateCount} duplicate method names`,
+                    message,
                     '查看详情 | View Details'
                 ).then(selection => {
                     console.log('用户选择:', selection);
                     if (selection === '查看详情 | View Details') {
-                        showDuplicateDetails(editor, methods, methodCounts, duplicateRanges);
+                        showDuplicateDetails(editor, methods, methodCounts, duplicateRanges, classCheckResult);
                     }
                 });
             } else {
-                console.log('没有发现重复方法，不显示弹窗');
+                console.log('没有发现重复方法或类，不显示弹窗');
             }
         } else {
             console.log('弹窗功能已禁用');
@@ -457,7 +646,7 @@ function activate(context) {
     }
 
     // 显示重复方法详情
-    function showDuplicateDetails(editor, methods, methodCounts, duplicateRanges) {
+    function showDuplicateDetails(editor, methods, methodCounts, duplicateRanges, classCheckResult) {
         // 按方法名分组重复项
         const duplicateGroups = new Map();
         
@@ -477,7 +666,7 @@ function activate(context) {
         // 创建详情面板内容
         const panel = vscode.window.createWebviewPanel(
             'duplicateMethodDetails',
-            '重复方法详情 | Duplicate Method Details',
+            '重复方法和类详情 | Duplicate Methods and Classes Details',
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
@@ -507,6 +696,13 @@ function activate(context) {
                     padding: 15px;
                     background-color: var(--vscode-editor-background);
                 }
+                .class-group {
+                    margin-bottom: 30px;
+                    border: 1px solid #ff6600;
+                    border-radius: 6px;
+                    padding: 15px;
+                    background-color: var(--vscode-editor-background);
+                }
                 .method-name {
                     font-size: 18px;
                     font-weight: bold;
@@ -514,6 +710,14 @@ function activate(context) {
                     margin-bottom: 15px;
                     padding-bottom: 10px;
                     border-bottom: 2px solid var(--vscode-panel-border);
+                }
+                .class-name {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #ff6600;
+                    margin-bottom: 15px;
+                    padding-bottom: 10px;
+                    border-bottom: 2px solid #ff6600;
                 }
                 .duplicate-item {
                     display: flex;
@@ -590,23 +794,56 @@ function activate(context) {
         </head>
         <body>
             <div class="header">
-                <div class="title">重复方法详情</div>
+                <div class="title">重复方法和类详情</div>
                 <button class="refresh-btn" onclick="refreshDetails()">刷新 Refresh</button>
             </div>
         `;
 
         let duplicateIndex = 1;
         
+        // 显示重复的类
+        if (classCheckResult && classCheckResult.duplicateClasses.length > 0) {
+            const classGroups = new Map();
+            classCheckResult.duplicateClasses.forEach(cls => {
+                if (!classGroups.has(cls.name)) {
+                    classGroups.set(cls.name, []);
+                }
+                classGroups.get(cls.name).push(cls);
+            });
+            
+            classGroups.forEach((duplicateClasses, className) => {
+                html += `
+                <div class="class-group">
+                    <div class="class-name">🏛️ Class: ${className}</div>
+                `;
+                
+                duplicateClasses.forEach(cls => {
+                    const startLine = cls.line + 1;
+                    
+                    html += `
+                    <div class="duplicate-item" onclick="jumpToLine(${cls.line}, ${cls.start}, ${cls.end}, '${currentFilePath}')">
+                        <div class="duplicate-index">${duplicateIndex}</div>
+                        <div class="duplicate-info">duplicate class ${duplicateIndex} - line(${startLine})</div>
+                    </div>
+                    `;
+                    duplicateIndex++;
+                });
+                
+                html += '</div>';
+            });
+        }
+        
+        // 显示重复的方法
         duplicateGroups.forEach((duplicateMethods, methodName) => {
             html += `
             <div class="method-group">
-                <div class="method-name">${methodName}</div>
+                <div class="method-name">🔧 Method: ${methodName}</div>
             `;
             
             duplicateMethods.forEach(method => {
                 const startLine = method.line + 1; // VSCode 行号从 0 开始，显示从 1 开始
                 
-                // 计算方法的结束行
+                // 计算方法的结束行和行数
                 let endLine = startLine;
                 const document = editor.document;
                 const totalLines = document.lineCount;
@@ -653,10 +890,12 @@ function activate(context) {
                     endLine = i + 1; // 更新结束行（+1因为显示行号从1开始）
                 }
                 
+                const lineCount = endLine - startLine + 1;
+                
                 html += `
                 <div class="duplicate-item" onclick="jumpToLine(${method.line}, ${method.start}, ${method.end}, '${currentFilePath}')">
                     <div class="duplicate-index">${duplicateIndex}</div>
-                    <div class="duplicate-info">duplicate ${duplicateIndex} - line(${startLine}-${endLine})</div>
+                    <div class="duplicate-info">duplicate method ${duplicateIndex} - line(${startLine}-${endLine}) - ${lineCount} lines</div>
                     <button class="delete-btn" onclick="deleteDuplicate(event, ${method.line}, ${method.start}, ${method.end})">×</button>
                 </div>
                 `;
@@ -810,9 +1049,10 @@ function activate(context) {
 
     // 清理装饰器
     function clearDecorations(editor) {
-        if (editor && decorationTypes.wavyLine && decorationTypes.warning) {
+        if (editor && decorationTypes.wavyLine && decorationTypes.warning && decorationTypes.classWarning) {
             editor.setDecorations(decorationTypes.wavyLine, []);
             editor.setDecorations(decorationTypes.warning, []);
+            editor.setDecorations(decorationTypes.classWarning, []);
         }
     }
 
@@ -855,7 +1095,8 @@ function activate(context) {
         documentChange,
         configChange,
         decorationTypes.wavyLine,
-        decorationTypes.warning
+        decorationTypes.warning,
+        decorationTypes.classWarning
     );
 }
 

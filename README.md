@@ -187,6 +187,13 @@ vsce package
 
 ## 更新日志 | Changelog
 
+### v0.1.5 (2025-11-24)
+- 🏛️ 新增类重复检测功能 | Add class duplicate detection functionality
+- 📊 在详情窗口显示方法行数 | Show method line count in detail window
+- 🎨 类重复使用不同颜色标记 | Use different color marking for class duplicates
+- 📝 详情窗口区分类和方法显示 | Differentiate class and method display in detail window
+- 🔧 支持15+种编程语言的类检测 | Support class detection for 15+ programming languages
+
 ### v0.1.4 (2025-11-24)
 - 🔗 修复GitHub仓库链接问题 | Fix GitHub repository links issue
 - 📦 成功推送代码到GitHub仓库 | Successfully push code to GitHub repository
@@ -318,22 +325,11 @@ Your support motivates us to keep improving!
 ## 📊 项目状态 | Project Status
 
 ✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.4  
+🎯 **版本 | Version:** 0.1.5  
 📦 **GitHub仓库 | GitHub Repository:** https://github.com/superadmini/admin-method-duplicate-check  
 ⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
 🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
 📈 **最后更新 | Last Updated:** 2025-11-24
 
 ---
-
-## 📊 项目状态 | Project Status
-
-✅ **已发布 | Published**  
-🎯 **版本 | Version:** 0.1.4  
-📦 **下载 | Downloads:** 正在统计中... | Counting...  
-⭐ **Star | Stars:** [点击这里给Star](https://github.com/superadmini/admin-method-duplicate-check) | [Click here to Star]  
-🔍 **检测语言 | Languages:** 40+ 种编程语言 | 40+ programming languages  
-
----
-
 **Made with ❤️ by [superadmini](https://github.com/superadmini)**
