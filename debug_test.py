@@ -1,16 +1,27 @@
+'''
+Description: file use to description
+Date: 2025-11-23 15:59:04
+LastEditTime: 2025-11-26 21:20:11
+copyRight: Yuan Shang Development
+FilePath: /variable-format-converter/Users/liqilin/PycharmProjects/vs code/Admin-Method-Duplicate-Check/debug_test.py
+'''
 # Test file for method duplicate detection
 
 class TestClass:
     def method1(self):
         """First method - should be normal"""
         pass
-    
+
     def method2(self):
         """Second method - should be normal"""
         pass
-    
+
     def method1(self):
         """Duplicate method - should be highlighted"""
+        pass
+
+class TestClass:
+    def method1(self):
         pass
 
 # These should NOT be detected as methods

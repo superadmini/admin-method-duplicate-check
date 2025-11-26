@@ -2,7 +2,7 @@
   "name": "admin-method-duplicate-check",
   "displayName": "Admin Method Duplicate Check",
   "description": "Detect duplicate method names in files and show wavy lines and warnings",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "superadmini",
   "icon": "images/app_line.png",
   "repository": {

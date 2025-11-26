@@ -8,7 +8,6 @@ function activate(context) {
 
     // 存储当前文件的重复方法信息
     let duplicateMethods = new Map();
-    let duplicateClasses = new Map();
     let decorationTypes = {
         wavyLine: null,
         warning: null,
@@ -217,7 +216,6 @@ function activate(context) {
         const text = document.getText();
         const lines = text.split('\n');
         const classes = [];
-        duplicateClasses.clear();
 
         // 查找所有类定义
         for (let i = 0; i < lines.length; i++) {
@@ -309,7 +307,7 @@ function activate(context) {
         return {
             classes: classes,
             classCounts: classCounts,
-            duplicateClasses: classes.filter(cls => classCounts.get(cls.name) > 1)
+            duplicateClassesList: classes.filter(cls => classCounts.get(cls.name) > 1)
         };
     }
 
@@ -566,7 +564,7 @@ function activate(context) {
 
         console.log('重复范围数量:', duplicateRanges.length);
         console.log('警告范围数量:', warningRanges.length);
-        console.log('重复类数量:', classCheckResult.duplicateClasses.length);
+        console.log('重复类数量:', classCheckResult.duplicateClassesList.length);
 
         // 应用装饰器
         if (config.get('enableWavyLine', true)) {
@@ -578,8 +576,8 @@ function activate(context) {
         }
         
         // 应用类重复警告装饰器
-        if (classCheckResult.duplicateClasses.length > 0) {
-            const classWarningRanges = classCheckResult.duplicateClasses.map(cls => ({
+        if (classCheckResult.duplicateClassesList.length > 0) {
+            const classWarningRanges = classCheckResult.duplicateClassesList.map(cls => ({
                 range: new vscode.Range(
                     new vscode.Position(cls.line, 0),
                     new vscode.Position(cls.line, 0)
@@ -601,7 +599,7 @@ function activate(context) {
             
             // 计算重复的类名数量
             const duplicateClassNames = new Set();
-            classCheckResult.duplicateClasses.forEach(cls => {
+            classCheckResult.duplicateClassesList.forEach(cls => {
                 if (classCheckResult.classCounts.get(cls.name) > 1) {
                     duplicateClassNames.add(cls.name);
                 }
@@ -802,22 +800,22 @@ function activate(context) {
         let duplicateIndex = 1;
         
         // 显示重复的类
-        if (classCheckResult && classCheckResult.duplicateClasses.length > 0) {
+        if (classCheckResult && classCheckResult.duplicateClassesList.length > 0) {
             const classGroups = new Map();
-            classCheckResult.duplicateClasses.forEach(cls => {
+            classCheckResult.duplicateClassesList.forEach(cls => {
                 if (!classGroups.has(cls.name)) {
                     classGroups.set(cls.name, []);
                 }
                 classGroups.get(cls.name).push(cls);
             });
             
-            classGroups.forEach((duplicateClasses, className) => {
+            classGroups.forEach((classDuplicates, className) => {
                 html += `
                 <div class="class-group">
                     <div class="class-name">🏛️ Class: ${className}</div>
                 `;
                 
-                duplicateClasses.forEach(cls => {
+                classDuplicates.forEach(cls => {
                     const startLine = cls.line + 1;
                     
                     html += `
