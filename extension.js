@@ -568,14 +568,23 @@ function activate(context) {
 
         // 应用装饰器
         if (config.get('enableWavyLine', true)) {
-            editor.setDecorations(decorationTypes.wavyLine, duplicateRanges);
+            // 创建类重复的波浪线装饰
+            const classDuplicateRanges = classCheckResult.duplicateClassesList.length > 0 ? 
+                classCheckResult.duplicateClassesList.map(cls => ({
+                    range: cls.range,
+                    hoverMessage: `Duplicate class: '${cls.name}' (found ${classCheckResult.classCounts.get(cls.name)} times)`
+                })) : [];
+            
+            // 合并方法和类的波浪线装饰
+            const allDuplicateRanges = [...duplicateRanges, ...classDuplicateRanges];
+            editor.setDecorations(decorationTypes.wavyLine, allDuplicateRanges);
         }
         
         if (warningRanges.length > 0) {
             editor.setDecorations(decorationTypes.warning, warningRanges);
         }
         
-        // 应用类重复警告装饰器
+        // 应用类重复警告装饰器（行号装饰）
         if (classCheckResult.duplicateClassesList.length > 0) {
             const classWarningRanges = classCheckResult.duplicateClassesList.map(cls => ({
                 range: new vscode.Range(
